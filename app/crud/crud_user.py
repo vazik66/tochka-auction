@@ -3,7 +3,7 @@ import uuid
 from typing import Optional
 from app.core.security import get_password_hash, verify_password
 from app.models.user import User
-from app.schemas.user import UserCreate, UserUpdate, UserInDB
+from app.schemas.user import UserCreate, UserUpdate
 
 
 def get_by_email(db: Session, email: str) -> Optional[User]:
@@ -60,11 +60,11 @@ def authenticate(db: Session, email: str, password: str) -> Optional[User]:
     return user
 
 
-def is_superuser(db: Session, id: Optional[str]) -> bool:
+def is_superuser(db: Session, id: str) -> bool:
     return get_by_id(db, id).is_superuser
 
 
-def make_superuser(db: Session, id: Optional[str]) -> Optional[User]:
+def make_superuser(db: Session, id: str) -> Optional[User]:
     user = get_by_id(db, id)
     user.is_superuser = True
     db.commit()
