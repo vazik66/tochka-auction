@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
-
+import boto3
 from app import crud, models, schemas
 from app.core import security
 from app.core.config import settings
@@ -45,3 +45,11 @@ def get_current_superuser(
     if not current_user.is_superuser:
         raise errors.NotEnoughPrivileges
     return current_user
+
+
+def get_s3_client():
+    yield boto3.client(
+        "s3",
+        aws_access_key_id=settings.S3_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.S3_SECRET_ACCESS_KEY,
+    )

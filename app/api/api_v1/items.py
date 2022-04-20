@@ -15,6 +15,7 @@ def create_item(
     item_in: schemas.ItemCreate,
     db: Session = Depends(deps.get_db),
     user: models.User = Depends(deps.get_current_user),
+    s3=Depends(deps.get_s3_client),
 ) -> schemas.Item:
     """
     {
@@ -26,11 +27,12 @@ def create_item(
           "title": "string",
           "description": "string",
           "price": 0
-        }
+        },
+        "images": ["base64 encoded string"],
       }
     }
     """
-    item = crud.crud_item.create(db, item_in, user)
+    item = crud.crud_item.create(db, s3, item_in, user)
     return schemas.Item.from_orm(item)
 
 
@@ -79,6 +81,7 @@ def delete_item(
     item_id: str,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_user),
+    s3=Depends(deps.get_s3_client),
 ) -> str:
     """
     {
@@ -96,7 +99,7 @@ def delete_item(
     if current_user.id != item.owner_id or not current_user.is_superuser:
         raise errors.NotEnoughPrivileges
 
-    crud.crud_item.delete(db, item_id)
+    crud.crud_item.delete(db, s3, item_id)
     return "Success"
 
 

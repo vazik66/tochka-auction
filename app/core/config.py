@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     DATABASE_URI: Optional[PostgresDsn] = None
 
+    S3_ACCESS_KEY_ID: str
+    S3_SECRET_ACCESS_KEY: str
+    S3_BUCKET_NAME: str
+
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
         if isinstance(v, str):

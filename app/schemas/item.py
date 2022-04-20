@@ -8,6 +8,7 @@ class ItemCreate(BaseModel):
     title: str
     description: Optional[str] = None
     price: int
+    images: Optional[list[str]] = None
 
 
 class ItemUpdate(BaseModel):
@@ -25,6 +26,7 @@ class ItemInDBBase(BaseModel):
     is_archived: bool
     is_moderating: bool
     created_at: datetime.datetime
+    images: list[str]
 
     class Config:
         orm_mode = True

@@ -1,6 +1,7 @@
+import base64
 import uuid
 from typing import List, Optional
-
+from app.core.config import settings
 from sqlalchemy.orm import Session
 from app.models.user import User
 from app.models.item import Item
@@ -42,14 +43,39 @@ def update(db: Session, item: Item, item_update: ItemUpdate) -> Item:
     return item
 
 
-def create(db: Session, item_in: ItemCreate, owner: User) -> Item:
-    db_item = Item(
-        id=uuid.uuid4(),
-        owner_id=owner.id,
-        title=item_in.title,
-        description=item_in.description,
-        price=item_in.price,
-    )
+def upload_to_s3(s3, images: list[str]):
+    image_urls = []
+    for image in images:
+        filename = str(uuid.uuid4()) + ".jpg"
+        byte = base64.b64decode(image)
+        _ = s3.put_object(
+            Body=byte, Key=f"images/{filename}", Bucket=settings.S3_BUCKET_NAME
+        )
+        image_urls.append(filename)
+
+    return image_urls
+
+
+def create(db: Session, s3, item_in: ItemCreate, owner: User) -> Item:
+    if item_in.images:
+        images_url = upload_to_s3(s3, item_in.images)
+
+        db_item = Item(
+            id=uuid.uuid4(),
+            owner_id=owner.id,
+            title=item_in.title,
+            description=item_in.description,
+            price=item_in.price,
+            images=images_url,
+        )
+    else:
+        db_item = Item(
+            id=uuid.uuid4(),
+            owner_id=owner.id,
+            title=item_in.title,
+            description=item_in.description,
+            price=item_in.price,
+        )
 
     db.add(db_item)
     db.commit()
@@ -89,7 +115,10 @@ def remove_archive(db: Session, item_id: str) -> Item:
     return item
 
 
-def delete(db: Session, id: str):
+def delete(db: Session, s3, id: str):
     item = get_by_id(db, id)
+    for image in item.images:
+        s3.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=f"images/{image}")
+
     db.delete(item)
     db.commit()
