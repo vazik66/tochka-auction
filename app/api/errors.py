@@ -23,7 +23,7 @@ class IncorrectEmailOrPassword(BaseError):
 
 class NotEnoughPrivileges(BaseError):
     CODE = 0000
-    MESSAGE = "Incorrect email or password"
+    MESSAGE = "Not enough privileges"
 
 
 class UserNotFound(BaseError):
@@ -39,3 +39,8 @@ class BadCredentials(BaseError):
 class ItemNotFound(BaseError):
     CODE = 0000
     MESSAGE = "Item Not Found"
+
+
+class EmailNotValid(BaseError):
+    CODE = 0000
+    MESSAGE = "Email is invalid"
