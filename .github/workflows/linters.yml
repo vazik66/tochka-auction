@@ -2,11 +2,9 @@ name: Linters
 on: [push]
 
 jobs:
-  black:
+  build:
     runs-on: ubuntu-latest
     name: Linter
-    concurrency:
-      group: group1
 
     steps:
       - uses: actions/checkout@v2
@@ -14,27 +12,10 @@ jobs:
         with:
           python-version: 3.9
         name: Set up env
-      - run: pip install black==22.3.0
+      - run: pip install black==22.3.0 flake8==4.0.1
 
         name: Run black
       - run: black .
 
-  flake8:
-    runs-on: ubuntu-latest
-    name: Linter
-    concurrency:
-      group: group1
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-        name: Set up env
-      - run: pip install flake8==4.0.1
-
         name: Run flake8
       - run: flake8 --exclude=tests --max-line-length=88 app/
-####
-
-####
