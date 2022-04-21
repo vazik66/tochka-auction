@@ -28,11 +28,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
-     with:
-        python-version: 3.9
+        with:
+          python-version: 3.9
         name: Set up env
       - run: pip install flake8==4.0.1
 
-
         name: Run flake8
-        - run: flake8 --exclude=tests --max-line-length=88 app/
+      - run: flake8 --exclude=tests --max-line-length=88 app/
