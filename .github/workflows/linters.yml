@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Linter
     concurrency:
-      group: ${{ github.ref }}
+      group: group1
       cancel-in-progress: true
 
     steps:
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Linter
     concurrency:
-      group: ${{ github.ref }}
+      group: group1
 
     steps:
       - uses: actions/checkout@v2
