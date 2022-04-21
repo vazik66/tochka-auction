@@ -7,7 +7,6 @@ jobs:
     name: Linter
     concurrency:
       group: group1
-      cancel-in-progress: true
 
     steps:
       - uses: actions/checkout@v2
