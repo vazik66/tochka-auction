@@ -23,7 +23,7 @@ def get_multi_by_owner(
 def get_multi(db: Session, skip: int = 0, limit: int = 100) -> list[Item]:
     return (
         db.query(Item)
-        .filter(Item.is_moderating == False, Item.is_archived == False)
+        .filter(Item.is_moderating == False, Item.is_archived == False)  # noqa
         .offset(skip)
         .limit(limit)
         .all()

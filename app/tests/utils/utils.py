@@ -50,7 +50,7 @@ def get_superuser_token_headers(client: TestClient) -> Dict[str, str]:
     }
     login_data = wrap_to_jsonrpc(login_data, "login_access_token")
 
-    r = client.post(f"/api/v1/jsonrpc", data=login_data)
+    r = client.post("/api/v1/jsonrpc", data=login_data)
     tokens = r.json()
     a_token = tokens["result"]["access_token"]
     headers = {"Authorization": f"bearer {a_token}"}

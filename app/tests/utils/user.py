@@ -16,7 +16,7 @@ def user_authentication_headers(
     data = {"username": email, "password": password}
 
     r = client.post(
-        f"/api/v1/jsonrpc", data=wrap_to_jsonrpc(data, "login_access_token")
+        "/api/v1/jsonrpc", data=wrap_to_jsonrpc(data, "login_access_token")
     )
     response = r.json()
     auth_token = response["result"]["access_token"]
