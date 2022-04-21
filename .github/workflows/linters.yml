@@ -35,6 +35,3 @@ jobs:
 
         name: Run flake8
       - run: flake8 --exclude=tests --max-line-length=88 app/
-
-####
-####
