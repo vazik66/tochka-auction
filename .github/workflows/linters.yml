@@ -10,11 +10,15 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: 3.9
-        name: Install linters
+        name: Set up env
       - run: pip install black==22.3.0 flake8==4.0.1 mypy==v0.942
+      - run: pip install -r requirements.txt
+
         name: Run black
       - run: black --check .
+
 #        name: Run flake8
 #      - run: flake8 app/ =)
+
         name: Run MyPy
       - run: mypy app
