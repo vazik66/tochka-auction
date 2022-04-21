@@ -1,0 +1,20 @@
+name: Linters
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Linters
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      name: Install linters
+      - run: pip install black==22.3.0 flake8==4.0.1 mypy==v0.942
+      name: Run black
+      - run: black --check .
+      name: Run flake8
+      - run: flake8
+      name: Run MyPy
+      - run mypy
