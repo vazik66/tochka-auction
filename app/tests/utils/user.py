@@ -15,9 +15,7 @@ def user_authentication_headers(
 ) -> Dict[str, str]:
     data = {"username": email, "password": password}
 
-    r = client.post(
-        "/api/v1/jsonrpc", data=wrap_to_jsonrpc(data, "login_access_token")
-    )
+    r = client.post("/api/v1/jsonrpc", data=wrap_to_jsonrpc(data, "login_access_token"))
     response = r.json()
     auth_token = response["result"]["access_token"]
     headers = {"Authorization": f"Bearer {auth_token}"}

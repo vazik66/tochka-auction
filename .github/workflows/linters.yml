@@ -15,7 +15,7 @@ jobs:
       - run: pip install black==22.3.0 flake8==4.0.1
 
         name: Run black
-      - run: black .
+      - run: black app/ --check
 
         name: Run flake8
       - run: flake8 --exclude=tests --max-line-length=88 app/
