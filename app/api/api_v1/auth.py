@@ -40,7 +40,8 @@ def login_access_token(
         raise errors.IncorrectEmailOrPassword
 
     token = schemas.Token(
-        access_token=security.create_access_token(user.id), token_type="Bearer"
+        access_token=security.create_access_token(str(user.id), user.is_superuser),
+        token_type="Bearer",
     )
     response.set_cookie("access-token", str(token))
     return token

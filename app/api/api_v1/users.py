@@ -4,7 +4,7 @@ from fastapi import Depends
 
 from sqlalchemy.orm import Session
 
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps, errors
 from app.api.api_v1.auth import rpc
 from pydantic import parse_obj_as
@@ -44,7 +44,7 @@ def get_users(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    _: models.User = Depends(deps.get_current_superuser),
+    _: str = Depends(deps.get_current_superuser),
 ) -> list[schemas.User]:
     """
     Get users from db
@@ -69,7 +69,7 @@ def get_users(
 def update_user(
     user_in: schemas.UserUpdate,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user_token: schemas.token.TokenPayload = Depends(deps.get_current_user),
 ) -> schemas.User:
     """
     Update own user.
@@ -92,13 +92,15 @@ def update_user(
     if crud.crud_user.get_by_email(db, str(user_in.email)):
         raise errors.EmailAlreadyInUse
 
-    user = crud.crud_user.update(db, user=current_user, user_update=user_in)
-    return schemas.User.from_orm(user)
+    user = crud.crud_user.get_by_id(db, current_user_token.sub)
+    updated_user = crud.crud_user.update(db, user=user, user_update=user_in)
+    return schemas.User.from_orm(updated_user)
 
 
 @rpc.method()
 def get_current_user_data(
-    current_user: models.User = Depends(deps.get_current_user),
+    db: Session = Depends(deps.get_db),
+    current_user_token: schemas.token.TokenPayload = Depends(deps.get_current_user),
 ) -> schemas.User:
     """
     Get current user data.
@@ -111,13 +113,14 @@ def get_current_user_data(
         "params":{}
     }
     """
-    return schemas.User.from_orm(current_user)
+    user = crud.crud_user.get_by_id(db, current_user_token.sub)
+    return schemas.User.from_orm(user)
 
 
 @rpc.method()
 def get_user_by_id(
     user_id: uuid.UUID,
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user_token: schemas.token.TokenPayload = Depends(deps.get_current_user),
     db: Session = Depends(deps.get_db),
 ) -> schemas.User:
     """
@@ -135,6 +138,6 @@ def get_user_by_id(
     """
     user = crud.crud_user.get_by_id(db, id=str(user_id))
 
-    if user.id == current_user.id or current_user.is_superuser:
+    if user.id == current_user_token.sub or current_user_token.is_superuser:
         return schemas.User.from_orm(user)
     raise errors.NotEnoughPrivileges

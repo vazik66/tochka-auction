@@ -5,7 +5,7 @@ from app.api.api_v1.users import rpc
 from fastapi import Depends
 
 from sqlalchemy.orm import Session
-from app import crud, models, schemas
+from app import crud, schemas
 from app.api import deps, errors
 from pydantic import parse_obj_as
 
@@ -14,7 +14,7 @@ from pydantic import parse_obj_as
 def create_item(
     item_in: schemas.ItemCreate,
     db: Session = Depends(deps.get_db),
-    user: models.User = Depends(deps.get_current_user),
+    current_user_token: schemas.token.TokenPayload = Depends(deps.get_current_user),
     s3=Depends(deps.get_s3_client),
 ) -> schemas.Item:
     """
@@ -32,6 +32,7 @@ def create_item(
       }
     }
     """
+    user = crud.crud_user.get_by_id(db, current_user_token.sub)
     item = crud.crud_item.create(db, s3, item_in, user)
     return schemas.Item.from_orm(item)
 
@@ -41,7 +42,7 @@ def get_multi_by_owner(
     skip: Optional[int],
     limit: Optional[int],
     db: Session = Depends(deps.get_db),
-    user: models.User = Depends(deps.get_current_user),
+    current_user_token: schemas.token.TokenPayload = Depends(deps.get_current_user),
 ) -> list[schemas.Item]:
     """
     {
@@ -54,7 +55,9 @@ def get_multi_by_owner(
       }
     }
     """
-    items = crud.get_multi_by_owner(db=db, owner_id=user.id, skip=skip, limit=limit)
+    items = crud.get_multi_by_owner(
+        db=db, owner_id=current_user_token.sub, skip=skip, limit=limit
+    )
     return parse_obj_as(list[schemas.Item], items)
 
 
@@ -80,7 +83,7 @@ def get_items(
 def delete_item(
     item_id: str,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user_token: schemas.token.TokenPayload = Depends(deps.get_current_user),
     s3=Depends(deps.get_s3_client),
 ) -> str:
     """
@@ -96,7 +99,10 @@ def delete_item(
     item = crud.crud_item.get_by_id(db, item_id)
     if not item:
         raise errors.ItemNotFound
-    if current_user.id != item.owner_id or not current_user.is_superuser:
+    if (
+        current_user_token.sub != str(item.owner_id)
+        and not current_user_token.is_superuser
+    ):
         raise errors.NotEnoughPrivileges
 
     crud.crud_item.delete(db, s3, item_id)
@@ -107,7 +113,7 @@ def delete_item(
 def set_moderation(
     item_id: str,
     db: Session = Depends(deps.get_db),
-    _: models.User = Depends(deps.get_current_superuser),
+    _: str = Depends(deps.get_current_superuser),
 ) -> schemas.Item:
     """
     {
@@ -130,7 +136,7 @@ def set_moderation(
 def remove_moderation(
     item_id: str,
     db: Session = Depends(deps.get_db),
-    _: models.User = Depends(deps.get_current_superuser),
+    _: str = Depends(deps.get_current_superuser),
 ) -> schemas.Item:
     """
     {
@@ -153,7 +159,7 @@ def remove_moderation(
 def archive(
     item_id: str,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user_token: schemas.token.TokenPayload = Depends(deps.get_current_user),
 ) -> schemas.Item:
     """
     {
@@ -168,7 +174,7 @@ def archive(
     item = crud.crud_item.get_by_id(db, item_id)
     if not item:
         raise errors.ItemNotFound
-    if current_user.id != item.owner_id or not current_user.is_superuser:
+    if current_user_token.sub != item.owner_id and not current_user_token.is_superuser:
         raise errors.NotEnoughPrivileges
     item = crud.crud_item.set_archive(db, item.id)
     return item
@@ -178,7 +184,7 @@ def archive(
 def remove_archive(
     item_id: str,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user_token: schemas.token.TokenPayload = Depends(deps.get_current_user),
 ) -> schemas.Item:
     """
     {
@@ -193,7 +199,7 @@ def remove_archive(
     item = crud.crud_item.get_by_id(db, item_id)
     if not item:
         raise errors.ItemNotFound
-    if current_user.id != item.owner_id or not current_user.is_superuser:
+    if current_user_token.sub != item.owner_id and not current_user_token.is_superuser:
         raise errors.NotEnoughPrivileges
     item = crud.crud_item.remove_archive(db, item.id)
     return item

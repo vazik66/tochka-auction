@@ -13,3 +13,4 @@ class Token(BaseModel):
 
 class TokenPayload(BaseModel):
     sub: Optional[str] = None
+    is_superuser: Optional[bool] = None

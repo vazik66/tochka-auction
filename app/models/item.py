@@ -12,6 +12,6 @@ class Item(Base):
     description = Column(String)
     price = Column(Integer, nullable=False)
     is_archived = Column(Boolean(), nullable=False, server_default="false")
-    is_moderating = Column(Boolean(), nullable=False, server_default="true")
+    is_moderating = Column(Boolean(), nullable=False, server_default="false")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     images = Column(ARRAY(String), server_default="{}")

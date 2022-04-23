@@ -13,10 +13,14 @@ def get_by_id(db: Session, id: str) -> Optional[Item]:
 
 
 def get_multi_by_owner(
-    db: Session, owner_id: uuid.UUID, skip: int = 0, limit: int = 100
+    db: Session, owner_id: str, skip: int = 0, limit: int = 100
 ) -> List[Item]:
     return (
-        db.query(Item).filter(Item.owner_id == owner_id).offset(skip).limit(limit).all()
+        db.query(Item)
+        .filter(Item.owner_id == uuid.UUID(owner_id))
+        .offset(skip)
+        .limit(limit)
+        .all()
     )
 
 
