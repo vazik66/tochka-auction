@@ -1,7 +1,7 @@
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 import fastapi_jsonrpc
-from app.api.api_v1.items import rpc
+from app.api.api_v1.payment import rpc
 
 
 def get_application():
@@ -11,11 +11,15 @@ def get_application():
         CORSMiddleware,
         allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["POST"],
         allow_headers=["*"],
     )
     return _app
 
 
-app = get_application()
-app.bind_entrypoint(rpc)
+if __name__ == "__main__":
+    import uvicorn
+
+    app = get_application()
+    app.bind_entrypoint(rpc)
+    uvicorn.run(app, host=settings.APP_HOST, port=settings.APP_PORT)

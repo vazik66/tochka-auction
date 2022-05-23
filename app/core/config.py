@@ -5,12 +5,16 @@ from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, validator
 
 class Settings(BaseSettings):
     APP_HOST: str
-    APP_PORT: str
+    APP_PORT: int
     DEBUG: bool
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     PROJECT_NAME: str
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
     SECRET_KEY: str
+
+    LOGS_FOLDER: str
+
+    PAYMENT_API_KEY: str
 
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str

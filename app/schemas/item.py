@@ -2,19 +2,24 @@ import datetime
 import uuid
 from typing import Optional
 from pydantic import BaseModel
+from app.schemas.bid import Bid
 
 
 class ItemCreate(BaseModel):
     title: str
     description: Optional[str] = None
-    price: int
+    min_bid: int
+    min_bid_step: Optional[int] = None
+    end_date: float
     images: Optional[list[str]] = None
 
 
 class ItemUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
-    price: Optional[int] = None
+    min_bid: Optional[int] = None
+    min_bid_step: Optional[int] = None
+    end_date: Optional[float] = None
 
 
 class ItemInDBBase(BaseModel):
@@ -22,11 +27,15 @@ class ItemInDBBase(BaseModel):
     owner_id: uuid.UUID
     title: str
     description: str
-    price: int
+    min_bid: int
+    min_bid_step: int
     is_archived: bool
-    is_moderating: bool
+    is_ended: bool
     created_at: datetime.datetime
+    end_date: datetime.datetime
     images: list[str]
+    bids: list[Bid]
+    winner: Optional[uuid.UUID] = None
 
     class Config:
         orm_mode = True

@@ -44,3 +44,33 @@ class ItemNotFound(BaseError):
 class EmailNotValid(BaseError):
     CODE = 0000
     MESSAGE = "Email is invalid"
+
+
+class InvalidAmount(BaseError):
+    CODE = 0000
+    MESSAGE = "New bid should be greater than previous bid"
+
+
+class CantPlaceBid(BaseError):
+    CODE = 0000
+    MESSAGE = "You can't place bid on this item"
+
+
+class AuctionHasEnded(BaseError):
+    CODE = 0000
+    MESSAGE = "Auction has ended"
+
+
+class OwnerCanNotBid(BaseError):
+    CODE = 0000
+    MESSAGE = "Owner can't bid on his item"
+
+
+class BidIsSmallerThanMinBidStep(BaseError):
+    CODE = 0000
+    MESSAGE = "Bid is smaller than minimum bid step"
+
+
+class EndDateMustBeBigger(BaseError):
+    CODE = 0000
+    MESSAGE = "End date must be bigger"

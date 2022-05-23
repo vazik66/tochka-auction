@@ -1,7 +1,6 @@
 from typing import Generator
 from app.api import errors
 from fastapi import Depends
-from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
 import boto3
@@ -9,8 +8,10 @@ from app import models, schemas
 from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
+from app.core.OAuth2CookieAuth import OAuth2PasswordBearerCookie
 
-reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="api/v1/jsonrpc/login_access_token")
+
+reusable_oauth2 = OAuth2PasswordBearerCookie(tokenUrl="api/v1/jsonrpc/login")
 
 
 def get_db() -> Generator:
@@ -29,7 +30,6 @@ def get_current_user(token: str = Depends(reusable_oauth2)) -> schemas.TokenPayl
         token_data = schemas.TokenPayload(**payload)
     except (jwt.JWTError, ValidationError):
         raise errors.BadCredentials
-
     return token_data
 
 

@@ -10,10 +10,10 @@ from app.api.api_v1.auth import rpc
 from pydantic import parse_obj_as
 
 
-@rpc.method()
+@rpc.method(tags=["User"])
 def signup(
-    form_data: schemas.user.UserCreate, db: Session = Depends(deps.get_db)
-) -> schemas.user.User:
+    form_data: schemas.UserCreate, db: Session = Depends(deps.get_db)
+) -> schemas.User:
     """
     {
         "jsonrpc":"2.0",
@@ -39,7 +39,7 @@ def signup(
     return user
 
 
-@rpc.method()
+@rpc.method(tags=["User"])
 def get_users(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -65,11 +65,11 @@ def get_users(
     return parse_obj_as(list[schemas.User], users)
 
 
-@rpc.method()
+@rpc.method(tags=["User"])
 def update_user(
     user_in: schemas.UserUpdate,
     db: Session = Depends(deps.get_db),
-    current_user_token: schemas.token.TokenPayload = Depends(deps.get_current_user),
+    current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> schemas.User:
     """
     Update own user.
@@ -97,10 +97,10 @@ def update_user(
     return schemas.User.from_orm(updated_user)
 
 
-@rpc.method()
+@rpc.method(tags=["User"])
 def get_current_user_data(
     db: Session = Depends(deps.get_db),
-    current_user_token: schemas.token.TokenPayload = Depends(deps.get_current_user),
+    current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> schemas.User:
     """
     Get current user data.
@@ -114,13 +114,13 @@ def get_current_user_data(
     }
     """
     user = crud.crud_user.get_by_id(db, current_user_token.sub)
-    return schemas.User.from_orm(user)
+    return user
 
 
-@rpc.method()
+@rpc.method(tags=["User"])
 def get_user_by_id(
     user_id: uuid.UUID,
-    current_user_token: schemas.token.TokenPayload = Depends(deps.get_current_user),
+    current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
     db: Session = Depends(deps.get_db),
 ) -> schemas.User:
     """

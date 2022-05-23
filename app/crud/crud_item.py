@@ -1,44 +1,43 @@
 import base64
+import datetime
 import uuid
 from typing import List, Optional
 from app.core.config import settings
 from sqlalchemy.orm import Session
-from app.models.user import User
-from app.models.item import Item
-from app.schemas.item import ItemCreate, ItemUpdate
+from app import models
+from app import schemas
+from app.crud import crud_bid, crud_order
 
 
-def get_by_id(db: Session, id: str) -> Optional[Item]:
-    return db.query(Item).get(id)
+def get_by_id(db: Session, id: str) -> Optional[models.Item]:
+    return db.query(models.Item).filter(models.Item.id == id).first()
 
 
-def get_multi_by_owner(
-    db: Session, owner_id: str, skip: int = 0, limit: int = 100
-) -> List[Item]:
+def get_multi_by_owner(db: Session, owner_id: str) -> List[models.Item]:
+    return db.query(models.Item).filter(models.Item.owner_id == owner_id).all()
+
+
+def get_multi(db: Session, skip: int = 0, limit: int = 100) -> list[models.Item]:
     return (
-        db.query(Item)
-        .filter(Item.owner_id == uuid.UUID(owner_id))
+        db.query(models.Item)
+        .filter(models.Item.is_ended == False, models.Item.is_archived == False)  # noqa
         .offset(skip)
         .limit(limit)
         .all()
     )
 
 
-def get_multi(db: Session, skip: int = 0, limit: int = 100) -> list[Item]:
-    return (
-        db.query(Item)
-        .filter(Item.is_moderating == False, Item.is_archived == False)  # noqa
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
-
-
-def update(db: Session, item: Item, item_update: ItemUpdate) -> Item:
+def update(
+    db: Session, item: models.Item, item_update: schemas.ItemUpdate
+) -> models.Item:
     for attr, value in item_update.__dict__.items():
         if value is None:
             continue
         if "id" == attr or "owner_id" == attr:
+            continue
+        if attr == "end_date":
+            end_date = datetime.datetime.fromtimestamp(value, datetime.timezone.utc)
+            item.__setattr__(attr, end_date)
             continue
         item.__setattr__(attr, value)
 
@@ -50,8 +49,13 @@ def update(db: Session, item: Item, item_update: ItemUpdate) -> Item:
 def upload_to_s3(s3, images: list[str]):
     image_urls = []
     for image in images:
+        if len(image) < 50:
+            continue
         filename = str(uuid.uuid4()) + ".jpg"
-        byte = base64.b64decode(image)
+        try:
+            byte = base64.b64decode(image)
+        except Exception:
+            raise BaseException("can't decode image")
         _ = s3.put_object(
             Body=byte, Key=f"images/{filename}", Bucket=settings.S3_BUCKET_NAME
         )
@@ -60,26 +64,24 @@ def upload_to_s3(s3, images: list[str]):
     return image_urls
 
 
-def create(db: Session, s3, item_in: ItemCreate, owner: User) -> Item:
+def create(
+    db: Session, s3, item_in: schemas.ItemCreate, owner: models.User
+) -> models.Item:
+    end_date = datetime.datetime.utcfromtimestamp(item_in.end_date)
+
+    db_item = models.Item(
+        id=uuid.uuid4(),
+        owner_id=owner.id,
+        title=item_in.title,
+        description=item_in.description,
+        min_bid=item_in.min_bid,
+        min_bid_step=item_in.min_bid_step,
+        end_date=end_date,
+    )
+
     if item_in.images:
         images_url = upload_to_s3(s3, item_in.images)
-
-        db_item = Item(
-            id=uuid.uuid4(),
-            owner_id=owner.id,
-            title=item_in.title,
-            description=item_in.description,
-            price=item_in.price,
-            images=images_url,
-        )
-    else:
-        db_item = Item(
-            id=uuid.uuid4(),
-            owner_id=owner.id,
-            title=item_in.title,
-            description=item_in.description,
-            price=item_in.price,
-        )
+        db_item.images = images_url
 
     db.add(db_item)
     db.commit()
@@ -87,23 +89,21 @@ def create(db: Session, s3, item_in: ItemCreate, owner: User) -> Item:
     return db_item
 
 
-def remove_moderate(db: Session, item_id: str) -> Item:
+def end_auction(db: Session, item_id: str) -> models.Item:
     item = get_by_id(db, item_id)
-    item.is_moderating = False
+    item.is_ended = True
+    if len(item.bids) > 0:
+        item.winner = item.bids[-1].user_id
     db.commit()
     db.refresh(item)
+    order_create = schemas.OrderCreate(
+        user_id=item.winner, item_id=item.id, amount=item.bids[-1].amount
+    )
+    _ = crud_order.create(db, order_create)
     return item
 
 
-def set_moderate(db: Session, item_id: str) -> Item:
-    item = get_by_id(db, item_id)
-    item.is_moderating = True
-    db.commit()
-    db.refresh(item)
-    return item
-
-
-def set_archive(db: Session, item_id: str) -> Item:
+def set_archive(db: Session, item_id: str) -> models.Item:
     item = get_by_id(db, item_id)
     item.is_archived = True
     db.commit()
@@ -111,7 +111,7 @@ def set_archive(db: Session, item_id: str) -> Item:
     return item
 
 
-def remove_archive(db: Session, item_id: str) -> Item:
+def remove_archive(db: Session, item_id: str) -> models.Item:
     item = get_by_id(db, item_id)
     item.is_archived = False
     db.commit()
@@ -121,8 +121,13 @@ def remove_archive(db: Session, item_id: str) -> Item:
 
 def delete(db: Session, s3, id: str):
     item = get_by_id(db, id)
+    if not item:
+        return None
     for image in item.images:
         s3.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=f"images/{image}")
+    if item.bids:
+        for bid in item.bids:
+            crud_bid.delete(db, bid.id)
 
     db.delete(item)
     db.commit()

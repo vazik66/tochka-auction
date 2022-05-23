@@ -8,7 +8,7 @@ def init_db(db: Session):
     user = crud.crud_user.get_by_email(db, email=settings.FIRST_SUPERUSER)
     if not user:
         user_in = schemas.UserCreate(
-            full_name="Andrew Vasilkov",
+            full_name="First SuperUser",
             email=EmailStr(settings.FIRST_SUPERUSER),
             password=settings.FIRST_SUPERUSER_PASSWORD,
             password_confirm=settings.FIRST_SUPERUSER_PASSWORD,

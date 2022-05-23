@@ -1,4 +1,3 @@
-import fastapi_jsonrpc as jsonrpc
 from pydantic import validate_email
 from fastapi import Depends, Response
 from fastapi.security import OAuth2PasswordRequestForm
@@ -7,12 +6,11 @@ from app.api import errors
 from app import crud, schemas
 from app.api import deps
 from app.core import security
+from app.api.api_v1.health_check import rpc
 
-rpc = jsonrpc.Entrypoint("/api/v1/jsonrpc")
 
-
-@rpc.method()
-def login_access_token(
+@rpc.method(tags=["Authorization"])
+def login(
     response: Response,
     db: Session = Depends(deps.get_db),
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -40,13 +38,15 @@ def login_access_token(
         raise errors.IncorrectEmailOrPassword
 
     token = schemas.Token(
-        access_token=security.create_access_token(str(user.id), user.is_superuser),
+        access_token=security.create_access_token(
+            str(user.id), user.is_superuser, user.full_name
+        ),
         token_type="Bearer",
     )
-    response.set_cookie("access-token", str(token))
+    response.set_cookie("access-token", value=str(token))
     return token
 
 
-@rpc.method()
+@rpc.method(tags=["Authorization"])
 def logout(response: Response) -> None:
     response.delete_cookie("access-token")
