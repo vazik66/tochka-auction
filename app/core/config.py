@@ -42,11 +42,11 @@ class Settings(BaseSettings):
         if isinstance(v, str):
             return v
         return PostgresDsn.build(
+            path=f"/{values.get('POSTGRES_DB') or ''}",
             scheme="postgresql",
             user=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_SERVER"),
-            path=f"/{values.get('POSTGRES_DB') or ''}",
+            host=values.get("POSTGRES_SERVER")
         )
 
     class Config:
