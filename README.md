@@ -1,9 +1,8 @@
-# Tochka auction proj
+# Tochka auction project
 
 ##  How to start ?
 ```
-docker-compose up
-uvicorn app.main:app
-alembic upgrade head
-python initial_data.py
+docker-compose up --build
+docker exec container_name alembic --autogenerate -m "init"
+docker exec container_name alembic upgrade head
 ```
