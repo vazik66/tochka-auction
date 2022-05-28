@@ -15,9 +15,12 @@ def health(db: Session = Depends(get_db)) -> schemas.HealthCheck:
     Checks full api health
     """
     db_conn = False
-    if db.query(models.User).first():
-        db_conn = True
-
+    try:
+        if db.query(models.User).first():
+            db_conn = True
+    except Exception:
+        pass
+        
     return schemas.HealthCheck(db_connection=db_conn)
 
 

@@ -22,4 +22,4 @@ if __name__ == "__main__":
 
     app = get_application()
     app.bind_entrypoint(rpc)
-    uvicorn.run(app, host="0.0.0.0", port=settings.APP_PORT)
+    uvicorn.run(app, host=settings.APP_HOST, port=settings.APP_PORT, proxy_headers=True)
