@@ -7,6 +7,7 @@ from app import crud, schemas
 from app.api import deps
 from app.core import security
 from app.api.api_v1.health_check import rpc
+from app.core.config import settings
 
 
 @rpc.method(tags=["Authorization"])
@@ -43,10 +44,10 @@ def login(
         ),
         token_type="Bearer",
     )
-    response.set_cookie("access-token", value=str(token))
+    response.set_cookie("access-token", value=str(token), domain=settings.DOMAIN, secure=True)
     return token
 
 
 @rpc.method(tags=["Authorization"])
 def logout(response: Response) -> None:
-    response.delete_cookie("access-token")
+    response.delete_cookie("access-token", domain=settings.DOMAIN, secure=True)

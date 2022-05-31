@@ -36,8 +36,12 @@ def create_item(
     """
     user = crud.crud_user.get_by_id(db, current_user_token.sub)
     end_date = datetime.datetime.utcfromtimestamp(item_in.end_date)
+    print(end_date)
+    print(datetime.datetime.utcnow())
     if end_date < datetime.datetime.utcnow():
         raise errors.EndDateMustBeBigger
+    if item_in.min_bid < 0 or item_in.min_bid_step < 0:
+        raise errors.TODOError
     item = crud.crud_item.create(db, s3, item_in, user)
     return schemas.Item.from_orm(item)
 

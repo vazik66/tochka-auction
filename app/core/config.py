@@ -14,7 +14,10 @@ class Settings(BaseSettings):
 
     LOGS_FOLDER: str
 
+    DOMAIN: str
+
     PAYMENT_API_KEY: str
+    PAYMENT_IPN_KEY: str
 
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str

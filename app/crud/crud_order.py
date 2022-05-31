@@ -24,7 +24,7 @@ def get_multi(db: Session, skip: int = 0, limit: int = 100) -> list[models.Order
 def update(
     db: Session, order: models.Order, order_update: schemas.OrderUpdate
 ) -> models.Order:
-    order.status = order_update.status
+    order.status = order_update.status.value
 
     db.commit()
     db.refresh(order)

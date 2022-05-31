@@ -14,8 +14,8 @@ import base64
 from io import BytesIO
 
 
-BID_SNIPING_ADD_MINUTES = 5
-BID_SNIPING_CHECK_BEFORE_MINUTES = 10
+BID_SNIPING_ADD_MINUTES = 0
+BID_SNIPING_CHECK_BEFORE_MINUTES = 0
 
 
 @rpc.method(tags=["Bid"])

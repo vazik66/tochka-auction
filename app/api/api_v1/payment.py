@@ -1,9 +1,9 @@
-# import hashlib
+import hashlib
 
-# import fastapi
+import fastapi
 import uuid
 from app.api.api_v1.bids import rpc
-from fastapi import Depends
+from fastapi import Depends, Request
 from sqlalchemy.orm import Session
 from app.api import deps
 from app import schemas, crud
@@ -11,7 +11,7 @@ from app.api import errors
 import requests
 from app.core.config import settings
 
-# import hmac
+import hmac
 import json
 
 
@@ -21,13 +21,7 @@ def get_orders(
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> list[schemas.Order]:
     orders = crud.crud_order.get_multi_by_owner(db, current_user_token.sub)
-    print(
-        orders[0].user_id,
-        orders[0].amount,
-        orders[0].item_id,
-        orders[0].status,
-        orders[0].id,
-    )
+    
     return orders
 
 
@@ -51,9 +45,9 @@ def get_payment_link(
         "price_currency": "rub",
         "order_id": str(order.id),
         "order_description": item.title,
-        # "ipn_callback_url": "URL_CALLBACK",
-        # "success_url": "SUCCESS_URL",
-        # "cansel_url": "FAILED_PAYMENT_URL"
+        "ipn_callback_url": "https://payment.milf-tochka.ru/",
+        "success_url": "https://app.milf-tochka.ru/payment/success",
+        "cancel_url": "https://app.milf-tochka.ru/payment/error"
     }
     headers = {
         "x-api-key": settings.PAYMENT_API_KEY,
@@ -86,10 +80,25 @@ def check_order_status(
     return {"status": order.status.name}
 
 
-# TODO
-# @rpc.method(tags=["Payment"])
-# def nowpayments_callback(
-#     request: fastapi.Request,
-#     callback: schemas.nowPaymentsCallback,
-#     db: Session = Depends(deps.get_db),
-# ):
+@rpc.method(tags=["Payment"])
+async def nowpayments_callback(
+    request: fastapi.Request,
+    callback: schemas.NOWPaymentsCallback,
+    db: Session = Depends(deps.get_db),
+):
+    data = await request.json()
+    sent_sig = request.headers.get('x-nowpayments-sig')
+    if not sent_sig:
+        return
+
+    sorted_data = json.dumps(dict(sorted(data['params']['callback'].items())), indent=None, separators=(',',':'))
+    sorted_data = bytes(sorted_data, "utf-8")
+    created_sig = hmac.new(bytes(settings.PAYMENT_IPN_KEY, "utf-8"), sorted_data, hashlib.sha512).hexdigest()
+
+    if not created_sig == sent_sig:
+        return
+
+    order = crud.crud_order.get_by_id(db, callback.order_id)
+    if callback.payment_status == "finished":
+        order_update = schemas.OrderUpdate(status=schemas.PaymentStatus.DONE)
+        _ = crud.crud_order.update(db=db, order=order, order_update=order_update)
