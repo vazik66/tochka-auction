@@ -1,6 +1,6 @@
 import uuid
 from app.api.api_v1.bids import rpc
-from fastapi import Depends, Request
+from fastapi import Depends
 from sqlalchemy.orm import Session
 from app.api import deps
 from app import schemas, crud
@@ -9,8 +9,6 @@ import requests
 from app.core.config import settings
 
 import json
-
-from app.core.security import create_nowpayments_hmac
 
 
 @rpc.method(tags=["Payment"])

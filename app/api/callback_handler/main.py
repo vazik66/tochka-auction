@@ -1,5 +1,4 @@
 from fastapi import Depends, Request
-import requests
 from fastapi import FastAPI
 from app.core.security import create_nowpayments_hmac
 from app.core.config import settings

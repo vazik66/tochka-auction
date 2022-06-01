@@ -1,5 +1,4 @@
 import datetime
-import uuid
 
 from app.api.api_v1.items import rpc
 
@@ -9,9 +8,6 @@ from sqlalchemy.orm import Session
 from app import schemas
 from app import crud
 from app.api import deps, errors
-
-import base64
-from io import BytesIO
 
 
 BID_SNIPING_ADD_MINUTES = 0
@@ -84,4 +80,3 @@ def get_bids_by_owner(
     """
 
     return crud.crud_bid.get_bids_by_owner(db, current_user_token.sub)
-

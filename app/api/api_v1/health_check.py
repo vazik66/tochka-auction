@@ -25,14 +25,15 @@ def health(db: Session = Depends(get_db)) -> schemas.HealthCheck:
 
     # Check payment status
     payment_api_working = False
-    resp = requests.get(url="https://api.nowpayments.io/v1/status",)
+    resp = requests.get(
+        url="https://api.nowpayments.io/v1/status",
+    )
     data = resp.json()
-    if data.get('message') == "ok":
+    if data.get("message") == "ok":
         payment_api_working = True
 
     return schemas.HealthCheck(
-            db_connection=db_conn,
-            payment_api_working=payment_api_working
+        db_connection=db_conn, payment_api_working=payment_api_working
     )
 
 
