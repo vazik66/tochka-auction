@@ -1,6 +1,3 @@
-import hashlib
-
-import fastapi
 import uuid
 from app.api.api_v1.bids import rpc
 from fastapi import Depends, Request
@@ -11,8 +8,9 @@ from app.api import errors
 import requests
 from app.core.config import settings
 
-import hmac
 import json
+
+from app.core.security import create_nowpayments_hmac
 
 
 @rpc.method(tags=["Payment"])
@@ -20,8 +18,11 @@ def get_orders(
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> list[schemas.Order]:
+    """
+    Returns current user orders
+    """
     orders = crud.crud_order.get_multi_by_owner(db, current_user_token.sub)
-    
+
     return orders
 
 
@@ -31,6 +32,9 @@ def get_payment_link(
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> str:
+    """
+    Returns url to pay the invoice
+    """
     order = crud.crud_order.get_by_id(db, str(order_id))
     if not order:
         raise errors.TODOError
@@ -45,9 +49,9 @@ def get_payment_link(
         "price_currency": "rub",
         "order_id": str(order.id),
         "order_description": item.title,
-        "ipn_callback_url": "https://payment.milf-tochka.ru/",
+        "ipn_callback_url": "https://api.milf-tochka.ru/payment/callback",
         "success_url": "https://app.milf-tochka.ru/payment/success",
-        "cancel_url": "https://app.milf-tochka.ru/payment/error"
+        "cancel_url": "https://app.milf-tochka.ru/payment/error",
     }
     headers = {
         "x-api-key": settings.PAYMENT_API_KEY,
@@ -59,9 +63,6 @@ def get_payment_link(
         headers=headers,
     )
     resp_data = resp.json()
-    print(resp_data)
-    print(json.dumps(data))
-
     return resp_data.get("invoice_url")
 
 
@@ -71,31 +72,36 @@ def check_order_status(
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> dict:
+    """
+    Returns order payment status
+    """
     order = crud.crud_order.get_by_id(db, str(order_id))
     if not order:
         raise errors.TODOError()  # No such order
     if current_user_token.sub != order.user_id:
         raise errors.NotEnoughPrivileges
 
-    return {"status": order.status.name}
+    return {"status": order.status.name}  # noqa
 
 
 @rpc.method(tags=["Payment"])
 async def nowpayments_callback(
-    request: fastapi.Request,
+    request: Request,
     callback: schemas.NOWPaymentsCallback,
     db: Session = Depends(deps.get_db),
 ):
-    data = await request.json()
-    sent_sig = request.headers.get('x-nowpayments-sig')
-    if not sent_sig:
+    """
+    Receives callback when invoice gets paid.
+    If callback status is finished (funds transferred to merchant wallet)
+    changes order status to "DONE".
+    """
+    request_body = await request.json()
+    request_signature = request.headers.get("x-nowpayments-sig")
+    if not request_signature:
         return
 
-    sorted_data = json.dumps(dict(sorted(data['params']['callback'].items())), indent=None, separators=(',',':'))
-    sorted_data = bytes(sorted_data, "utf-8")
-    created_sig = hmac.new(bytes(settings.PAYMENT_IPN_KEY, "utf-8"), sorted_data, hashlib.sha512).hexdigest()
-
-    if not created_sig == sent_sig:
+    created_signature = create_nowpayments_hmac(request_body, settings.PAYMENT_IPN_KEY)
+    if not created_signature == request_signature:
         return
 
     order = crud.crud_order.get_by_id(db, callback.order_id)

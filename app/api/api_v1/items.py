@@ -18,26 +18,10 @@ def create_item(
     s3=Depends(deps.get_s3_client),
 ) -> schemas.Item:
     """
-    {
-      "jsonrpc": "2.0",
-      "id": 1,
-      "method": "create_item",
-      "params": {
-         "item_in": {
-            "title": "string",
-            "description": "string",
-            "min_bid": 0,
-            "min_bid_step": 0,
-            "end_date": 5185715.516 (timestamp)
-        },
-        "images": ["base64 encoded string"],
-      }
-    }
+    Creates item
     """
     user = crud.crud_user.get_by_id(db, current_user_token.sub)
     end_date = datetime.datetime.utcfromtimestamp(item_in.end_date)
-    print(end_date)
-    print(datetime.datetime.utcnow())
     if end_date < datetime.datetime.utcnow():
         raise errors.EndDateMustBeBigger
     if item_in.min_bid < 0 or item_in.min_bid_step < 0:
@@ -51,7 +35,9 @@ def get_item_by_id(
     item_id: str,
     db: Session = Depends(deps.get_db),
 ) -> schemas.Item:
-
+    """
+    Finds item by item_id
+    """
     item = crud.crud_item.get_by_id(db, item_id)
     if not item:
         raise errors.ItemNotFound
@@ -64,13 +50,7 @@ def get_multi_by_owner(
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> list[schemas.Item]:
     """
-    {
-      "jsonrpc": "2.0",
-      "id": 0,
-      "method": "get_multi_by_owner",
-      "params": {
-      }
-    }
+    Finds items by current user id
     """
     items = crud.crud_item.get_multi_by_owner(db=db, owner_id=current_user_token.sub)
     return items
@@ -81,15 +61,7 @@ def get_items(
     skip: Optional[int], limit: Optional[int], db: Session = Depends(deps.get_db)
 ) -> list[schemas.Item]:
     """
-    {
-      "jsonrpc": "2.0",
-      "id": 1,
-      "method": "get_items",
-      "params": {
-        "skip": 0,
-        "limit": 100
-      }
-    }
+    Returns items with optional skip, limit params
     """
     return crud.crud_item.get_multi(db, skip, limit)
 
@@ -102,14 +74,7 @@ def delete_item(
     s3=Depends(deps.get_s3_client),
 ) -> str:
     """
-    {
-      "jsonrpc": "2.0",
-      "id": 0,
-      "method": "delete_item",
-      "params": {
-        "item_id": "string"
-      }
-    }
+    Deletes item by item_id if item_owner is current user or if superuser
     """
     item = crud.crud_item.get_by_id(db, item_id)
     if not item:
@@ -131,14 +96,7 @@ def archive(
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> schemas.Item:
     """
-    {
-      "jsonrpc": "2.0",
-      "id": 1,
-      "method": "archive",
-      "params": {
-          "item_id": "string"
-      }
-    }
+    Archives item if item owner is current user or if superuser
     """
     item = crud.crud_item.get_by_id(db, item_id)
     if not item:
@@ -156,14 +114,7 @@ def remove_archive(
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> schemas.Item:
     """
-    {
-      "jsonrpc": "2.0",
-      "id": 1,
-      "method": "remove_archive",
-      "params": {
-          "item_id": "string"
-      }
-    }
+    Unarchives item if item owner is current user or if superuser
     """
     item = crud.crud_item.get_by_id(db, item_id)
     if not item:

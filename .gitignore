@@ -44,7 +44,7 @@ coverage.xml
 *.py,cover
 .pytest_cache/
 *.http
-http-client.private.env.json
+tests/http-client.private.env.json
 
 # Environments
 .env

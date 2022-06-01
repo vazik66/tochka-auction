@@ -24,6 +24,9 @@ def place_bid(
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> schemas.Bid:
+    """
+    Creates bid
+    """
     item = crud.crud_item.get_by_id(db, str(bid_in.item_id))
     if not item:
         raise errors.ItemNotFound
@@ -62,6 +65,9 @@ def place_bid(
 def get_bids_by_item(
     item_id: str, db: Session = Depends(deps.get_db)
 ) -> list[schemas.Bid]:
+    """
+    Finds bids by item_id
+    """
     item = crud.crud_item.get_by_id(db, item_id)
     if not item:
         raise errors.ItemNotFound
@@ -73,25 +79,9 @@ def get_bids_by_owner(
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> list[schemas.Bid]:
+    """
+    Finds bid by user cookie
+    """
 
     return crud.crud_bid.get_bids_by_owner(db, current_user_token.sub)
 
-
-@rpc.method(tags=["Bid"])
-def test_qrcode(item_id: str, db: Session = Depends(deps.get_db)) -> bytes:
-    item = crud.crud_item.get_by_id(db, item_id)
-    import app.schemas.order as payment
-
-    # If not item.winner: winner is not chosen yet
-
-    invoice = payment.Invoice(
-        id=uuid.uuid4(), item=item, amount=item.bids[-1].amount, status=False
-    )
-    invoice._convert_currency()
-
-    qrcode = invoice.get_qr_code()
-    buffered = BytesIO()
-    qrcode.save(buffered, format="PNG")
-    img_base64 = base64.b64encode(buffered.getvalue())
-
-    return img_base64

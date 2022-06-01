@@ -2,6 +2,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 import fastapi_jsonrpc
 from app.api.api_v1.payment import rpc
+from app.api.callback_handler.main import handler
 
 
 def get_application():
@@ -22,4 +23,7 @@ if __name__ == "__main__":
 
     app = get_application()
     app.bind_entrypoint(rpc)
-    uvicorn.run(app, host=settings.APP_HOST, port=settings.APP_PORT, proxy_headers=True)
+    app.mount("/payment", handler)
+    uvicorn.run(
+        app, host=settings.APP_HOST, port=settings.APP_PORT, proxy_headers=True
+    )  # noqa

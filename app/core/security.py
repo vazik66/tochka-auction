@@ -1,3 +1,6 @@
+import hashlib
+import hmac
+import json
 from datetime import datetime, timedelta
 from typing import Any, Union
 
@@ -40,3 +43,19 @@ def verify_password(plain_password: str, password_hash: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
+
+def create_nowpayments_hmac(data: dict, key: str) -> str:
+    sorted_data = json.dumps(
+        dict(sorted(data.items())), indent=None, separators=(",", ":")
+    )
+    signature = create_hmac(sorted_data, key, hashlib.sha512())
+    return signature
+
+
+def create_hmac(data: str, key: str, digestmod: hashlib) -> str:
+    encoded_message = bytes(data, "utf-8")
+    signature = hmac.new(
+        key=bytes(key, "utf-8"), msg=encoded_message, digestmod=digestmod
+    ).hexdigest()
+    return signature

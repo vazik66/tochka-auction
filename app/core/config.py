@@ -49,7 +49,7 @@ class Settings(BaseSettings):
             scheme="postgresql",
             user=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_SERVER")
+            host=values.get("POSTGRES_SERVER"),
         )
 
     class Config:
