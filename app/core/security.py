@@ -49,7 +49,7 @@ def create_nowpayments_hmac(data: dict, key: str) -> str:
     sorted_data = json.dumps(
         dict(sorted(data.items())), indent=None, separators=(",", ":")
     )
-    signature = create_hmac(sorted_data, key, hashlib.sha512())
+    signature = create_hmac(sorted_data, key, hashlib.sha512)
     return signature
 
 
