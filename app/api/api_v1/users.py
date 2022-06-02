@@ -15,19 +15,7 @@ async def signup(
     form_data: schemas.UserCreate, db: Session = Depends(deps.get_db)
 ) -> schemas.User:
     """
-    {
-        "jsonrpc":"2.0",
-        "id":0,
-        "method":"signup",
-        "params":{
-            "form_data":{
-                "email":"user@example.com",
-                "full_name":"string",
-                "password":"string",
-                "password_confirm":"string"
-            }
-        }
-    }
+    Creates user
     """
 
     user = crud.crud_user.get_by_email(db=db, email=str(form_data.email))
@@ -47,21 +35,11 @@ async def get_users(
     _: str = Depends(deps.get_current_superuser),
 ) -> list[schemas.User]:
     """
-    Get users from db
-
-    Example:
-    {
-        "jsonrpc":"2.0",
-        "id":0,
-        "method":"get_users",
-        "params":{
-            "skip":0,
-            "limit":100
-        }
-    }
+    Gets users with skip, limit params.
+    Superuser method.
     """
-    users = crud.crud_user.get_multi(db, skip=skip, limit=limit)
 
+    users = crud.crud_user.get_multi(db, skip=skip, limit=limit)
     return parse_obj_as(list[schemas.User], users)
 
 
@@ -72,27 +50,16 @@ async def update_user(
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> schemas.User:
     """
-    Update own user.
-
-    Example:
-    {
-        "jsonrpc":"2.0",
-        "id":0,
-        "method":"update_user",
-        "params":{
-            "user_in": {
-                "password":"string",
-                "full_name":"string",
-                "email":"user@example.com"
-            }
-        }
-    }
+    Updates user data.
     """
 
-    if crud.crud_user.get_by_email(db, str(user_in.email)):
-        raise errors.EmailAlreadyInUse
+    if user_in.email:
+        if crud.crud_user.get_by_email(db, str(user_in.email)):
+            raise errors.EmailAlreadyInUse
 
     user = crud.crud_user.get_by_id(db, current_user_token.sub)
+    if not user:
+        raise errors.UserNotFound
     updated_user = crud.crud_user.update(db, user=user, user_update=user_in)
     return schemas.User.from_orm(updated_user)
 
@@ -104,16 +71,11 @@ async def get_current_user_data(
 ) -> schemas.User:
     """
     Get current user data.
-
-    Example:
-    {
-        "jsonrpc":"2.0",
-        "id":0,
-        "method":"get_current_user_data",
-        "params":{}
-    }
     """
+
     user = crud.crud_user.get_by_id(db, current_user_token.sub)
+    if not user:
+        raise errors.UserNotFound
     return user
 
 
@@ -124,20 +86,14 @@ async def get_user_by_id(
     db: Session = Depends(deps.get_db),
 ) -> schemas.User:
     """
-    Get a specific user by id.
-
-    Example:
-    {
-      "jsonrpc": "2.0",
-      "id": 0,
-      "method": "get_user_by_id",
-      "params": {
-        "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-      }
-    }
+    Get user by id.
+    User can only get his data.
+    Superuser can get any data.
     """
-    user = crud.crud_user.get_by_id(db, id=str(user_id))
 
+    user = crud.crud_user.get_by_id(db, id=str(user_id))
+    if not user:
+        raise errors.UserNotFound
     if user.id == current_user_token.sub or current_user_token.is_superuser:
         return schemas.User.from_orm(user)
     raise errors.NotEnoughPrivileges
