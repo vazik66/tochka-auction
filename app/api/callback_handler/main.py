@@ -13,7 +13,7 @@ handler = FastAPI(title="payment_callback_handler")
 @handler.post("/callback")
 async def handle_callback(request: Request, db: Session = Depends(deps.get_db)) -> None:
     """
-    Receives callback about invoice. Chacks callback validity.
+    Receives callback about invoice. Checks callback validity.
     If callback status is finished (funds transferred to merchant wallet)
     changes order status to "DONE".
     """
