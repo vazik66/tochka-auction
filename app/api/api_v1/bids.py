@@ -10,8 +10,8 @@ from app import crud
 from app.api import deps, errors
 
 
-BID_SNIPING_ADD_MINUTES = 0
-BID_SNIPING_CHECK_BEFORE_MINUTES = 0
+BID_SNIPING_ADD_MINUTES = 5
+BID_SNIPING_CHECK_BEFORE_MINUTES = 10
 
 
 @rpc.method(tags=["Bid"])
