@@ -79,6 +79,9 @@ async def delete_item(
     item = crud.crud_item.get_by_id(db, item_id)
     if not item:
         raise errors.ItemNotFound
+    if len(item.bids) > 0:
+        # Can't delete as there are bids placed
+        raise errors.TODOError
     if (
         current_user_token.sub != str(item.owner_id)
         and not current_user_token.is_superuser
