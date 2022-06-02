@@ -47,7 +47,7 @@ def get_payment_link(
 
     data = {
         "price_amount": order.amount,
-        "price_currency": "usd",
+        "price_currency": "rub",
         "order_id": str(order.id),
         "order_description": item.title,
         "ipn_callback_url": "https://api.milf-tochka.ru/payment/callback",
@@ -59,7 +59,7 @@ def get_payment_link(
         "Content-Type": "application/json",
     }
     resp = requests.post(
-        url="https://api-sandbox.nowpayments.io/v1/invoice",
+        url="https://api.nowpayments.io/v1/invoice",
         data=json.dumps(data),
         headers=headers,
     )
