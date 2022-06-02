@@ -12,7 +12,7 @@ import json
 
 
 @rpc.method(tags=["Payment"])
-def get_orders(
+async def get_orders(
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> list[schemas.Order]:
@@ -25,7 +25,7 @@ def get_orders(
 
 
 @rpc.method(tags=["Payment"])
-def get_payment_link(
+async def get_payment_link(
     order_id: uuid.UUID,
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
@@ -47,7 +47,7 @@ def get_payment_link(
 
     data = {
         "price_amount": order.amount,
-        "price_currency": "rub",
+        "price_currency": "usd",
         "order_id": str(order.id),
         "order_description": item.title,
         "ipn_callback_url": "https://api.milf-tochka.ru/payment/callback",
@@ -59,7 +59,7 @@ def get_payment_link(
         "Content-Type": "application/json",
     }
     resp = requests.post(
-        url="https://api.nowpayments.io/v1/invoice",
+        url="https://api-sandbox.nowpayments.io/v1/invoice",
         data=json.dumps(data),
         headers=headers,
     )
@@ -68,7 +68,7 @@ def get_payment_link(
 
 
 @rpc.method(tags=["Payment"])
-def check_order_status(
+async def check_order_status(
     order_id: uuid.UUID,
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),

@@ -11,7 +11,7 @@ rpc = jsonrpc.Entrypoint("/api/v1/jsonrpc", middlewares=[logging_middleware])
 
 
 @rpc.method(tags=["Health"])
-def health(db: Session = Depends(get_db)) -> schemas.HealthCheck:
+async def health(db: Session = Depends(get_db)) -> schemas.HealthCheck:
     """
     Checks full api health
     """
@@ -38,7 +38,7 @@ def health(db: Session = Depends(get_db)) -> schemas.HealthCheck:
 
 
 @rpc.method(tags=["Health"])
-def ping() -> str:
+async def ping() -> str:
     """
     Simple health check
     """

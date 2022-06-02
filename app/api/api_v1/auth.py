@@ -11,7 +11,7 @@ from app.core.config import settings
 
 
 @rpc.method(tags=["Authorization"])
-def login(
+async def login(
     response: Response,
     db: Session = Depends(deps.get_db),
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -44,7 +44,7 @@ def login(
 
 
 @rpc.method(tags=["Authorization"])
-def logout(response: Response) -> None:
+async def logout(response: Response) -> None:
     """
     Returns response with delete cookie action
     """

@@ -11,7 +11,7 @@ from app.api import deps, errors
 
 
 @rpc.method(tags=["Item"])
-def create_item(
+async def create_item(
     item_in: schemas.ItemCreate,
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
@@ -31,7 +31,7 @@ def create_item(
 
 
 @rpc.method(tags=["Item"])
-def get_item_by_id(
+async def get_item_by_id(
     item_id: str,
     db: Session = Depends(deps.get_db),
 ) -> schemas.Item:
@@ -45,7 +45,7 @@ def get_item_by_id(
 
 
 @rpc.method(tags=["Item"])
-def get_multi_by_owner(
+async def get_multi_by_owner(
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> list[schemas.Item]:
@@ -57,7 +57,7 @@ def get_multi_by_owner(
 
 
 @rpc.method(tags=["Item"])
-def get_items(
+async def get_items(
     skip: Optional[int], limit: Optional[int], db: Session = Depends(deps.get_db)
 ) -> list[schemas.Item]:
     """
@@ -67,7 +67,7 @@ def get_items(
 
 
 @rpc.method(tags=["Item"])
-def delete_item(
+async def delete_item(
     item_id: str,
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
@@ -90,7 +90,7 @@ def delete_item(
 
 
 @rpc.method(tags=["Item"])
-def archive(
+async def archive(
     item_id: str,
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
@@ -108,7 +108,7 @@ def archive(
 
 
 @rpc.method(tags=["Item"])
-def remove_archive(
+async def remove_archive(
     item_id: str,
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),

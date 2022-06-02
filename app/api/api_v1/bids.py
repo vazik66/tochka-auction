@@ -15,7 +15,7 @@ BID_SNIPING_CHECK_BEFORE_MINUTES = 0
 
 
 @rpc.method(tags=["Bid"])
-def place_bid(
+async def place_bid(
     bid_in: schemas.BidCreate,
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
@@ -58,7 +58,7 @@ def place_bid(
 
 
 @rpc.method(tags=["Bid"])
-def get_bids_by_item(
+async def get_bids_by_item(
     item_id: str, db: Session = Depends(deps.get_db)
 ) -> list[schemas.Bid]:
     """
@@ -71,7 +71,7 @@ def get_bids_by_item(
 
 
 @rpc.method(tags=["Bid"])
-def get_bids_by_owner(
+async def get_bids_by_owner(
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> list[schemas.Bid]:

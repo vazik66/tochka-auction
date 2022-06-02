@@ -11,7 +11,7 @@ from pydantic import parse_obj_as
 
 
 @rpc.method(tags=["User"])
-def signup(
+async def signup(
     form_data: schemas.UserCreate, db: Session = Depends(deps.get_db)
 ) -> schemas.User:
     """
@@ -40,7 +40,7 @@ def signup(
 
 
 @rpc.method(tags=["User"])
-def get_users(
+async def get_users(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
@@ -66,7 +66,7 @@ def get_users(
 
 
 @rpc.method(tags=["User"])
-def update_user(
+async def update_user(
     user_in: schemas.UserUpdate,
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
@@ -98,7 +98,7 @@ def update_user(
 
 
 @rpc.method(tags=["User"])
-def get_current_user_data(
+async def get_current_user_data(
     db: Session = Depends(deps.get_db),
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
 ) -> schemas.User:
@@ -118,7 +118,7 @@ def get_current_user_data(
 
 
 @rpc.method(tags=["User"])
-def get_user_by_id(
+async def get_user_by_id(
     user_id: uuid.UUID,
     current_user_token: schemas.TokenPayload = Depends(deps.get_current_user),
     db: Session = Depends(deps.get_db),
