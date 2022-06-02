@@ -13,20 +13,19 @@ def get_bids_by_owner(
     db: Session,
     owner_id: str,
 ) -> List[models.Bid]:
-    bids = db.query(models.Bid).filter(models.Bid.user_id == owner_id).all()
+    bids: list[models.Bid] = db.query(models.Bid).filter(models.Bid.user_id == owner_id).all()
 
     result = []
     item_ids = set()
     for bid in bids:
         item_ids.add(bid.item_id)
     for item_id in item_ids:
-        maximum = bids[0]
+        maximum = 0
         for bid in bids:
             if not bid.item_id == item_id:
                 continue
-            if bid.amount < maximum.amount:
-                continue
-            maximum = bid
+            if bid.amount > maximum:
+                maximum = bid
         result.append(maximum)
     return result
 
