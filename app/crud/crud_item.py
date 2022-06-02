@@ -2,6 +2,7 @@ import base64
 import datetime
 import uuid
 from typing import List, Optional
+
 from app.core.config import settings
 from sqlalchemy.orm import Session
 from app import models
@@ -50,13 +51,14 @@ def upload_to_s3(s3, images: list[str]):
     image_urls = []
     for image in images:
         if len(image) < 50:
+            # IDK how to check if base64 is real image
             continue
         filename = str(uuid.uuid4()) + ".jpg"
         try:
             byte = base64.b64decode(image)
         except Exception:
             raise BaseException("can't decode image")
-        _ = s3.put_object(
+        s3.put_object(
             Body=byte, Key=f"images/{filename}", Bucket=settings.S3_BUCKET_NAME
         )
         image_urls.append(filename)

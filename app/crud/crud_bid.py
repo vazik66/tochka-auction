@@ -13,7 +13,9 @@ def get_bids_by_owner(
     db: Session,
     owner_id: str,
 ) -> List[models.Bid]:
-    bids: list[models.Bid] = db.query(models.Bid).filter(models.Bid.user_id == owner_id).all()
+    bids: list[models.Bid] = (
+        db.query(models.Bid).filter(models.Bid.user_id == owner_id).all()
+    )
 
     result = []
     item_ids = set()

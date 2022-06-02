@@ -1,4 +1,7 @@
 from typing import Generator
+
+from botocore.client import BaseClient
+
 from app.api import errors
 from fastapi import Depends
 from jose import jwt
@@ -9,7 +12,6 @@ from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.core.OAuth2CookieAuth import OAuth2PasswordBearerCookie
-
 
 reusable_oauth2 = OAuth2PasswordBearerCookie(tokenUrl="api/v1/jsonrpc/login")
 
@@ -41,9 +43,10 @@ def get_current_superuser(
     return str(current_user.sub)
 
 
-def get_s3_client():
-    yield boto3.client(
+def get_s3_client() -> BaseClient:
+    s3_client = boto3.client(
         "s3",
         aws_access_key_id=settings.S3_ACCESS_KEY_ID,
         aws_secret_access_key=settings.S3_SECRET_ACCESS_KEY,
     )
+    yield s3_client
