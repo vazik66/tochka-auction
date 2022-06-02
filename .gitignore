@@ -50,6 +50,6 @@ tests/http-client.private.env.json
 .env
 venv/
 
-
+alembic/versions/*
 .idea
 logs/
