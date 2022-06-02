@@ -9,6 +9,8 @@ from app.core import security
 from app.api.api_v1.health_check import rpc
 from app.core.config import settings
 
+COOKIE_MAX_AGE_IN_SECONDS = 1 * 24 * 60 * 60
+
 
 @rpc.method(tags=["Authorization"])
 async def login(
@@ -38,7 +40,11 @@ async def login(
         token_type="Bearer",
     )
     response.set_cookie(
-        "access-token", value=str(token), domain=settings.DOMAIN, secure=True
+        "access-token",
+        value=str(token),
+        domain=settings.DOMAIN,
+        secure=True,
+        max_age=COOKIE_MAX_AGE_IN_SECONDS,
     )
     return token
 
