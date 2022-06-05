@@ -12,9 +12,9 @@ from app.utils.logger import logger
 
 def get_memcache_client() -> PooledClient:
     client = PooledClient(
-            (settings.MEMCACHED_HOST, settings.MEMCACHED_PORT),
-            serde=JsonSerde(),
-            max_pool_size=4,
+        (settings.MEMCACHED_HOST, settings.MEMCACHED_PORT),
+        serde=JsonSerde(),
+        max_pool_size=4,
     )
     return client
 
@@ -36,7 +36,7 @@ def cache(expire: int = 0, noreply: bool = False):
 
             new_val = await func(*args, **kwargs)
             memcache_client.set(
-                    key=key, value=new_val.json(), expire=expire, noreply=noreply
+                key=key, value=new_val.json(), expire=expire, noreply=noreply
             )
             if hasattr(new_val, "__root__"):
                 return new_val.__root__
