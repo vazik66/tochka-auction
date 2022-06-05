@@ -1,4 +1,4 @@
-from .item import Item, ItemCreate, ItemInDB, ItemUpdate  # noqa
+from .item import Item, ItemCreate, ItemInDB, ItemUpdate, ListItem  # noqa
 from .token import Token, TokenPayload  # noqa
 from .user import User, UserCreate, UserInDB, UserUpdate  # noqa
 from .bid import Bid, BidCreate  # noqa

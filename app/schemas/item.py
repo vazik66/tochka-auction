@@ -1,4 +1,5 @@
 import datetime
+import typing
 import uuid
 from typing import Optional
 from pydantic import BaseModel
@@ -49,3 +50,7 @@ class Item(ItemInDBBase):
 # Actual database scheme
 class ItemInDB(ItemInDBBase):
     pass
+
+
+class ListItem(BaseModel):
+    __root__: typing.List[Item]

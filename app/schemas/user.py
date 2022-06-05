@@ -25,10 +25,6 @@ class UserInDBBase(BaseModel):
         orm_mode = True
 
 
-class UserFullName(BaseModel):
-    full_name: str
-
-
 # Public Scheme to return to user
 class User(UserInDBBase):
     pass

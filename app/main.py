@@ -22,8 +22,11 @@ if __name__ == "__main__":
     import uvicorn
 
     app = get_application()
+
+    # Register routes
     app.bind_entrypoint(rpc)
     app.mount("/payment", handler)
+
     uvicorn.run(
         app, host=settings.APP_HOST, port=settings.APP_PORT, proxy_headers=True
     )  # noqa

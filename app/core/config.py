@@ -13,14 +13,26 @@ class Settings(BaseSettings):
     SECRET_KEY: str
 
     LOGS_FOLDER: str
-
     DOMAIN: str
-
-    PAYMENT_API_KEY: str
-    PAYMENT_IPN_KEY: str
 
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str
+
+    POSTGRES_SERVER: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+    DATABASE_URI: Optional[PostgresDsn] = None
+
+    MEMCACHED_HOST: Union[str, int]
+    MEMCACHED_PORT: int
+
+    S3_ACCESS_KEY_ID: str
+    S3_SECRET_ACCESS_KEY: str
+    S3_BUCKET_NAME: str
+
+    PAYMENT_API_KEY: str
+    PAYMENT_IPN_KEY: str
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
@@ -29,16 +41,6 @@ class Settings(BaseSettings):
         elif isinstance(v, (list, str)):
             return v
         raise ValueError(v)
-
-    POSTGRES_SERVER: str
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
-    DATABASE_URI: Optional[PostgresDsn] = None
-
-    S3_ACCESS_KEY_ID: str
-    S3_SECRET_ACCESS_KEY: str
-    S3_BUCKET_NAME: str
 
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:

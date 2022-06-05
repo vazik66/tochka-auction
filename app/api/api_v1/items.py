@@ -1,6 +1,8 @@
 import datetime
+import typing
 from typing import Optional
 
+from app.cache.client import cache
 from app.api.api_v1.users import rpc
 
 from fastapi import Depends
@@ -8,6 +10,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 from app import crud, schemas
 from app.api import deps, errors
+from app.cache.client import memcache_client
 
 
 @rpc.method(tags=["Item"])
@@ -27,6 +30,7 @@ async def create_item(
     if item_in.min_bid < 0 or item_in.min_bid_step < 0:
         raise errors.TODOError
     item = crud.crud_item.create(db, s3, item_in, user)
+    memcache_client.flush_all(noreply=True)
     return schemas.Item.from_orm(item)
 
 
@@ -57,13 +61,16 @@ async def get_multi_by_owner(
 
 
 @rpc.method(tags=["Item"])
+@cache(expire=60, noreply=True)
 async def get_items(
     skip: Optional[int], limit: Optional[int], db: Session = Depends(deps.get_db)
-) -> list[schemas.Item]:
+) -> typing.Union[typing.Any, list[schemas.Item]]:
     """
     Returns items with optional skip, limit params
     """
-    return crud.crud_item.get_multi(db, skip, limit)
+
+    items = schemas.ListItem.parse_obj(crud.crud_item.get_multi(db, skip, limit))
+    return items
 
 
 @rpc.method(tags=["Item"])
@@ -89,6 +96,7 @@ async def delete_item(
         raise errors.NotEnoughPrivileges
 
     crud.crud_item.delete(db, s3, item_id)
+    memcache_client.flush_all(noreply=True)
     return "Success"
 
 

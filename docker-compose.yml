@@ -21,16 +21,15 @@ services:
       # lets encrypt
       - traefik.http.routers.app-https.tls.certresolver=le
 
-
       # Redirect http to https
       - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
       - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
       - traefik.http.routers.app-http.middlewares=https-redirect
 
       # rate limitter
-      - traefik.http.routers.app-https.middlewares=api-ratelimit
-      - traefik.http.middlewares.api-ratelimit.ratelimit.average=2000
-      - traefik.http.middlewares.api-ratelimit.ratelimit.period=1m
+#      - traefik.http.routers.app-https.middlewares=api-ratelimit
+#      - traefik.http.middlewares.api-ratelimit.ratelimit.average=2000
+#      - traefik.http.middlewares.api-ratelimit.ratelimit.period=1m
 
     networks:
       - traefik-public
@@ -50,17 +49,28 @@ services:
     networks:
       - traefik-public
 
-  # adminer:
-  #   image: adminer
-  #   restart: always
-  #   environment:
-  #     - ADMINER_DESIGN=pepa-linha
-  #   ports:
-  #     - "8081:8080"
-  #   depends_on:
-  #     - database
-  #   networks:
-  #     - traefik-public
+  memcached:
+    image: memcached:1.6.5-alpine
+    restart: always
+    ports:
+      - "11211:11211"
+    command: -m 64
+    networks:
+      - traefik-public
+
+#  adminer:
+#    image: adminer
+#    restart: always
+#    environment:
+#      - ADMINER_DESIGN=pepa-linha
+#    ports:
+#      - "8081:8080"
+#    depends_on:
+#      - database
+#    networks:
+#      - traefik-public
+#    labels:
+#      - traefik.enable=true
 
 networks:
   traefik-public:
