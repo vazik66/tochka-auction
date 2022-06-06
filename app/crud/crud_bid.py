@@ -22,13 +22,16 @@ def get_bids_by_owner(
     for bid in bids:
         item_ids.add(bid.item_id)
     for item_id in item_ids:
-        maximum = 0
+        maximum_bid = 0
         for bid in bids:
             if not bid.item_id == item_id:
                 continue
-            if bid.amount > maximum:
-                maximum = bid
-        result.append(maximum)
+            if type(maximum_bid) is int:
+                if bid.amount > maximum_bid:
+                    maximum_bid = bid
+            elif bid.amount > maximum_bid.amount:
+                maximum_bid = bid
+        result.append(maximum_bid)
     return result
 
 

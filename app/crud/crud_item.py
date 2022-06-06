@@ -98,11 +98,25 @@ def end_auction(db: Session, item_id: str) -> models.Item:
         item.winner = item.bids[-1].user_id
     db.commit()
     db.refresh(item)
-    order_create = schemas.OrderCreate(
-        user_id=item.winner, item_id=item.id, amount=item.bids[-1].amount
-    )
-    _ = crud_order.create(db, order_create)
+
+    if item.winner:
+        order_create = schemas.OrderCreate(
+            user_id=item.winner, item_id=item.id, amount=item.bids[-1].amount
+        )
+        crud_order.create(db, order_create)
     return item
+
+
+def get_outdated_items(db: Session) -> list[models.Item]:
+    return (
+        db.query(models.Item)
+        .filter(
+            models.Item.is_ended == False,  # noqa
+            models.Item.is_archived == False,  # noqa
+            models.Item.end_date < datetime.datetime.utcnow(),
+        )
+        .all()
+    )
 
 
 def set_archive(db: Session, item_id: str) -> models.Item:
