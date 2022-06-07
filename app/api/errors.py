@@ -74,3 +74,8 @@ class BidIsSmallerThanMinBidStep(BaseError):
 class EndDateMustBeBigger(BaseError):
     CODE = 0000
     MESSAGE = "End date must be bigger"
+
+
+class CanNotDeleteWhenWinnerIsChosen(BaseError):
+    CODE = 0000
+    MESSAGE= "Can't delete item when winner is chosen"

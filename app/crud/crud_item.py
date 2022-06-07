@@ -139,6 +139,8 @@ def delete(db: Session, s3, id: str):
     item = get_by_id(db, id)
     if not item:
         return None
+    if item.winner:
+        return None
     for image in item.images:
         s3.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=f"images/{image}")
     if item.bids:
