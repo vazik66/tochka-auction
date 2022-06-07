@@ -78,4 +78,4 @@ class EndDateMustBeBigger(BaseError):
 
 class CanNotDeleteWhenWinnerIsChosen(BaseError):
     CODE = 0000
-    MESSAGE= "Can't delete item when winner is chosen"
+    MESSAGE = "Can't delete item when winner is chosen"
