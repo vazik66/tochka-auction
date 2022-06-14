@@ -2,7 +2,7 @@ import datetime
 import typing
 import uuid
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from app.schemas.bid import Bid
 
 
@@ -13,6 +13,18 @@ class ItemCreate(BaseModel):
     min_bid_step: Optional[int] = None
     end_date: float
     images: Optional[list[str]] = None
+
+    @validator("min_bid")
+    def amount_must_be_smaller(cls, v):
+        if v > 100000000:
+            raise ValueError("Amount must be smaller then 100000000")
+        return v
+
+    @validator("min_bid_step")
+    def must_be_compatible_with_min_bid(cls, v, values, **kwargs):
+        if v + values.get("min_bid") > 100000000:
+            raise ValueError("Min bid is too big, bids cannot be placed")
+        return v
 
 
 class ItemUpdate(BaseModel):
