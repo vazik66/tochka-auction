@@ -21,6 +21,7 @@ docker exec tochka-auction-web-1 alembic upgrade head
 - Vue
 - Docker
 - Traefik
+- Github Actions
 
 ## Possible app improvements:
 - Add account balance, because now anyone can bid any amount and not pay
