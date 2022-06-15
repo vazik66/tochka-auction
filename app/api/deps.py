@@ -12,6 +12,8 @@ from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.core.OAuth2CookieAuth import OAuth2PasswordBearerCookie
+from app.crud import crud_user
+from sqlalchemy.orm import Session
 
 reusable_oauth2 = OAuth2PasswordBearerCookie(tokenUrl="api/v1/jsonrpc/login")
 
@@ -24,13 +26,18 @@ def get_db() -> Generator:
         db.close()
 
 
-def get_current_user(token: str = Depends(reusable_oauth2)) -> schemas.TokenPayload:
+def get_current_user(
+    token: str = Depends(reusable_oauth2), db: Session = Depends(get_db)
+) -> schemas.TokenPayload:
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
         token_data = schemas.TokenPayload(**payload)
     except (jwt.JWTError, ValidationError):
+        raise errors.BadCredentials
+    user = crud_user.get_by_id(db, token_data.sub)
+    if not user:
         raise errors.BadCredentials
     return token_data
 
