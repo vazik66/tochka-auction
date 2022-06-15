@@ -22,6 +22,7 @@ docker exec tochka-auction-web-1 alembic upgrade head
 - Docker
 - Traefik
 - Github Actions
+- How to exit vim
 
 ## Possible app improvements:
 - Add account balance, because now anyone can bid any amount and not pay
